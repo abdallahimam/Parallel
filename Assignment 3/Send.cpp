@@ -7,16 +7,19 @@
 #define TAG_2 2
 
 int main(int args, char ** argvs) {
-
+	double start_time, end_time;
 	int rank, size, number_of_processes, i, j, number, sub_range, reminder, start, count, recieved;
 	long long int result = 1;
 	MPI_Status status;
 	MPI_Init(&args, &argvs);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Barrier(MPI_COMM_WORLD);
+	start_time = MPI_Wtime();
 	number_of_processes = size - 1;
 	if (rank == ROOT) {
 		scanf_s("%d", &number);
+		start_time = MPI_Wtime();
 		sub_range = number / number_of_processes;
 		reminder = number % number_of_processes;
 		start = 1;
@@ -38,22 +41,22 @@ int main(int args, char ** argvs) {
 			if (i < reminder) {
 				count++;
 			}
-			printf("p%d: calculate partial factorial from %d to %d = %d",
+			/*printf("p%d: calculate partial factorial from %d to %d = %d",
 				(i + 1), start, (start + count - 1), start);
 			int j;
 			for (j = start + 1; j < count + start; j++) {
 				printf("*%d", j);
 			}
-			printf(" = %lld.\n", temp);
+			printf(" = %lld.\n", temp);*/
 			result *= temp;
 			start += count;
 			tempArr[i] = temp;
 		}
-		printf("P0 will have factorial(%d) = ", number);
+		/*printf("P0 will have factorial(%d) = ", number);
 		for (i = 0; i < number_of_processes - 1; i++) {
 			printf("%d*", tempArr[i]);
 		}
-		printf("%d = ", tempArr[number_of_processes - 1]);
+		printf("%d = ", tempArr[number_of_processes - 1]);*/
 		printf("%lld.\n", result);
 	}
 	else {
@@ -64,6 +67,11 @@ int main(int args, char ** argvs) {
 		}
 		MPI_Send(&result, 1, MPI_LONG_LONG_INT, ROOT, TAG_1, MPI_COMM_WORLD);
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
+	end_time = MPI_Wtime();
 	MPI_Finalize();
+	if (rank == ROOT) {
+		printf("Elapsed Time for Bcast and Reduce: %f seconds.\n", end_time - start_time);
+	}
 	return 0;
 }
